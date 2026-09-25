@@ -1,0 +1,24 @@
+{
+  "payload": {
+    "schema": 1,
+    "product_id": "FASAL_RIN_AUTOMATION",
+    "manifest_type": "subscription_manifest",
+    "generated_at": "2026-09-25T16:34:19+00:00",
+    "subscriptions": {
+      "068a408982693689319afaeb6e5944f4eb6fa2b5f896f388ee7bd4157db3a4ab": {
+        "schema": 1,
+        "product_id": "FASAL_RIN_AUTOMATION",
+        "license_id": "068a408982693689319afaeb6e5944f4eb6fa2b5f896f388ee7bd4157db3a4ab",
+        "status": "active",
+        "valid_from": "2026-09-25",
+        "expires_on": "2027-03-31",
+        "access": [
+          "standalone",
+          "integrated"
+        ],
+        "updated_at": "2026-09-25T16:34:19+00:00"
+      }
+    }
+  },
+  "signature": "kmU4M3d1qqo7GHdbH/zL+UTBePXe2Os4CbsGXex/Kv6yD5Rx8e9Bwmaa9v2iFpkKS1tOWNM1Bm+SsYcf7kxQe3Dry0Y8b4lICKZTf1Voxp+wYaCccdaDVhfIQ3ZW6nqd7qHugTH0TUBLq6U76Ob7pvYoj+vnfBXEUJ87Or9MKIh4/yt8rABZ7rgvsrOetF4fmoX6zYlaB3pJ69H/CJ/oVxTVwRF5BprimC4tYBz/U3mcTmZtXTSB7N6p7GIM5giW5/YGEpCVzJojpSHruHUBCVBvPW5hsJWSEos4bkPjoScUa0BBLBSdGqvSF9jL1btic7ku465KreqNKoPZWeEMbiOKlj+Gz1byPon38MSLE+13GtWrNxYuWsBUg3TfKcRIEP8d48Yi3aC0+EbvweRqOcHXjbcXfdPFDiDPka44zmkgKKxUBSNxdfdaOHTBlOI91CJe5k2GLTd0cV4QipojwCdc4jpE+wnShs2LVkyRzchSZi4bBwZCVnTQ1MgabY7o"
+}

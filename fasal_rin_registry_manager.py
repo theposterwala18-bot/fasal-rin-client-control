@@ -15,8 +15,10 @@ from tkinter import filedialog, messagebox, ttk
 ROOT = Path(__file__).resolve().parent
 CSV_PATH = ROOT / "fasal_rin_registry.csv"
 BUILD_SCRIPT = ROOT / "build_fasal_rin_github_files.py"
-PUBLISH_DIR = ROOT / "publish" / "licenses"
+PUBLISH_ROOT = ROOT / "publish"
+PUBLISH_DIR = PUBLISH_ROOT / "licenses"
 BACKUP_DIR = ROOT / "registry_backups"
+DAILY_BACKUP_DIR = BACKUP_DIR / "daily"
 EXPORT_DIR = ROOT / "exports"
 
 HEADERS = [
@@ -45,8 +47,8 @@ LABELS = {
     "district": "District",
     "branch_name": "Branch Name",
     "status": "Status *",
-    "valid_from": "Valid From * (YYYY-MM-DD)",
-    "expires_at": "Expires At * (YYYY-MM-DD)",
+    "valid_from": "Valid From * (DD-MM-YYYY)",
+    "expires_at": "Expires At * (DD-MM-YYYY)",
     "amount_paid": "Amount Paid",
     "balance_due": "Balance Due",
     "blocked_reason": "Blocked Reason",
@@ -62,14 +64,18 @@ def identity(value: object) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "", clean(value)).upper()
 
 
-def parse_date(value: str) -> str:
+def parse_date_value(value: str) -> date:
     text = clean(value)
-    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"):
+    for fmt in ("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"):
         try:
-            return datetime.strptime(text, fmt).date().isoformat()
+            return datetime.strptime(text, fmt).date()
         except ValueError:
             continue
-    raise ValueError(f"Date format sahi nahi: {value}. YYYY-MM-DD use karo.")
+    raise ValueError(f"Date format sahi nahi: {value}. DD-MM-YYYY use karo.")
+
+
+def parse_date(value: str) -> str:
+    return parse_date_value(value).strftime("%d-%m-%Y")
 
 
 def number_text(value: str) -> str:
@@ -91,8 +97,10 @@ class FasalRinRegistryManager:
         self.search_var = tk.StringVar()
         self.status_var = tk.StringVar(value="Ready")
         self._build_ui()
+        self._ensure_daily_backup()
         self._load_rows()
         self._clear_form()
+        self._schedule_daily_backup()
         self.root.mainloop()
 
     def _build_ui(self) -> None:
@@ -231,10 +239,19 @@ class FasalRinRegistryManager:
 
     def _load_rows(self) -> None:
         self.rows = []
+        dates_updated = False
         if CSV_PATH.is_file():
             with CSV_PATH.open("r", encoding="utf-8-sig", newline="") as handle:
                 for raw in csv.DictReader(handle):
-                    self.rows.append({name: clean(raw.get(name)) for name in HEADERS})
+                    row = {name: clean(raw.get(name)) for name in HEADERS}
+                    for field_name in ("valid_from", "expires_at"):
+                        if row.get(field_name):
+                            formatted = parse_date(row[field_name])
+                            dates_updated = dates_updated or formatted != row[field_name]
+                            row[field_name] = formatted
+                    self.rows.append(row)
+        if dates_updated:
+            self._write_rows()
         self._refresh_tree()
 
     def _refresh_tree(self) -> None:
@@ -287,8 +304,8 @@ class FasalRinRegistryManager:
         today = date.today()
         self.vars["sr_no"].set(self._next_sr())
         self.vars["status"].set("paid")
-        self.vars["valid_from"].set(today.isoformat())
-        self.vars["expires_at"].set((today + timedelta(days=365)).isoformat())
+        self.vars["valid_from"].set(today.strftime("%d-%m-%Y"))
+        self.vars["expires_at"].set((today + timedelta(days=365)).strftime("%d-%m-%Y"))
         self.vars["amount_paid"].set("0")
         self.vars["balance_due"].set("0")
         for item in self.tree.selection():
@@ -305,18 +322,33 @@ class FasalRinRegistryManager:
             raise ValueError("Mobile No./User ID valid nahi hai.")
         if row["status"] not in STATUS_VALUES:
             raise ValueError("Status valid choose karo.")
-        row["valid_from"] = parse_date(row["valid_from"])
-        row["expires_at"] = parse_date(row["expires_at"])
-        if row["expires_at"] < row["valid_from"]:
+        valid_from = parse_date_value(row["valid_from"])
+        expires_at = parse_date_value(row["expires_at"])
+        if expires_at < valid_from:
             raise ValueError("Expires At, Valid From ton pehla nahi ho sakda.")
+        row["valid_from"] = valid_from.strftime("%d-%m-%Y")
+        row["expires_at"] = expires_at.strftime("%d-%m-%Y")
         row["amount_paid"] = number_text(row["amount_paid"])
         row["balance_due"] = number_text(row["balance_due"])
         row["sr_no"] = row.get("sr_no") or self._next_sr()
         return row
 
+    def _ensure_daily_backup(self, overwrite: bool = False) -> None:
+        if not CSV_PATH.is_file():
+            return
+        DAILY_BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        target = DAILY_BACKUP_DIR / f"fasal_rin_registry_{date.today():%Y-%m-%d}.csv"
+        if overwrite or not target.is_file():
+            shutil.copy2(CSV_PATH, target)
+
+    def _schedule_daily_backup(self) -> None:
+        self._ensure_daily_backup()
+        self.root.after(60 * 60 * 1000, self._schedule_daily_backup)
+
     def _write_rows(self) -> None:
         CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
         if CSV_PATH.is_file():
+            self._ensure_daily_backup()
             BACKUP_DIR.mkdir(parents=True, exist_ok=True)
             backup = BACKUP_DIR / f"fasal_rin_registry_{datetime.now():%Y%m%d_%H%M%S}.csv"
             shutil.copy2(CSV_PATH, backup)
@@ -326,6 +358,7 @@ class FasalRinRegistryManager:
             writer.writeheader()
             writer.writerows(self.rows)
         os.replace(temp, CSV_PATH)
+        self._ensure_daily_backup(overwrite=True)
 
     def _save_new(self) -> None:
         try:
@@ -439,8 +472,9 @@ class FasalRinRegistryManager:
     def _upload_github(self) -> None:
         try:
             self._build_files(show_message=False)
-            subprocess.run(["git", "add", "licenses"], cwd=str(ROOT), check=True)
-            status = subprocess.run(["git", "status", "--porcelain", "--", "licenses"], cwd=str(ROOT), check=True, capture_output=True, text=True).stdout.strip()
+            manifest = "licenses/subscription_manifest.json"
+            subprocess.run(["git", "add", manifest], cwd=str(ROOT), check=True)
+            status = subprocess.run(["git", "status", "--porcelain", "--", manifest], cwd=str(ROOT), check=True, capture_output=True, text=True).stdout.strip()
             if not status:
                 messagebox.showinfo("GitHub", "GitHub files already latest ne.", parent=self.root)
                 return
@@ -455,7 +489,7 @@ class FasalRinRegistryManager:
     def _open_publish(self) -> None:
         try:
             self._build_files(show_message=False)
-            os.startfile(str(PUBLISH_DIR))
+            os.startfile(str(PUBLISH_ROOT))
             self.status_var.set("Manual GitHub upload folder khul gayi.")
         except Exception as exc:
             messagebox.showerror("Open Failed", str(exc), parent=self.root)

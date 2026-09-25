@@ -75,7 +75,7 @@ def load_private_key():
     )
 
 
-def write_license(payload: dict) -> Path:
+def write_signed_document(payload: dict, target: Path) -> Path:
     private_key = load_private_key()
     signature = private_key.sign(
         canonical_payload(payload),
@@ -89,10 +89,14 @@ def write_license(payload: dict) -> Path:
         "payload": payload,
         "signature": base64.b64encode(signature).decode("ascii"),
     }
-    LICENSE_DIR.mkdir(parents=True, exist_ok=True)
-    target = LICENSE_DIR / f"{payload['license_id']}.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(envelope, indent=2), encoding="utf-8")
     return target
+
+
+def write_license(payload: dict) -> Path:
+    target = LICENSE_DIR / f"{payload['license_id']}.json"
+    return write_signed_document(payload, target)
 
 
 def update_customer_ledger(user_id: str, values: dict) -> None:
