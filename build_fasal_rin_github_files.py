@@ -19,7 +19,7 @@ CSV_PATH = ROOT / "fasal_rin_registry.csv"
 LICENSES_DIR = ROOT / "licenses"
 PUBLISH_LICENSES_DIR = ROOT / "publish" / "licenses"
 SUMMARY_PATH = ROOT / "publish" / "build_summary.txt"
-MANIFEST_NAME = "subscription_manifest.json"
+MANIFEST_NAME = "Fasal_Rin_subscription_manifest.json"
 MANIFEST_PATH = LICENSES_DIR / MANIFEST_NAME
 UPLOAD_GUIDE_PATH = ROOT / "publish" / "MANUAL GITHUB UPLOAD GUIDE.txt"
 
@@ -108,12 +108,12 @@ def main() -> int:
         "1. GitHub te fasal-rin-client-control repository kholo.\n"
         "2. Repository de licenses folder nu kholo.\n"
         "3. Add file > Upload files click karo.\n"
-        "4. publish\\licenses\\subscription_manifest.json file upload karo.\n"
+        "4. publish\\licenses\\Fasal_Rin_subscription_manifest.json file upload karo.\n"
         "5. Commit directly to main choose karke Commit changes click karo.\n"
         "6. Upload complete hon ton 1-2 minute baad Fasal Rin subscription check karo.\n\n"
         "Repository:\n"
         "https://github.com/theposterwala18-bot/fasal-rin-client-control\n\n"
-        "Upload sirf subscription_manifest.json nu karna hai. Registry CSV, backup, "
+        "Upload sirf Fasal_Rin_subscription_manifest.json nu karna hai. Registry CSV, backup, "
         "private key ja client details GitHub te upload nahi karniyan.\n",
         encoding="utf-8",
     )

@@ -4,7 +4,7 @@ This repository controls only the `FASAL_RIN_AUTOMATION` product. It is fully
 separate from Mr Dhaliwal Creation subscriptions and repositories.
 
 Each customer is activated from the same Fasal Rin portal Mobile No./User ID.
-The public `licenses/subscription_manifest.json` stores only SHA-256 product
+The public `licenses/Fasal_Rin_subscription_manifest.json` stores only SHA-256 product
 identities, dates, status, and access rights. Raw User IDs, customer names,
 payment details, and owner notes stay in the ignored local registry files.
 Every entitlement includes both
@@ -25,7 +25,7 @@ must never be uploaded or included in a client setup. Copy
 The application checks this signed manifest:
 
 ```text
-https://raw.githubusercontent.com/theposterwala18-bot/fasal-rin-client-control/main/licenses/subscription_manifest.json
+https://raw.githubusercontent.com/theposterwala18-bot/fasal-rin-client-control/main/licenses/Fasal_Rin_subscription_manifest.json
 ```
 
 ## Registry workflow
@@ -34,11 +34,11 @@ https://raw.githubusercontent.com/theposterwala18-bot/fasal-rin-client-control/m
 2. Save or update the customer using dates in `DD-MM-YYYY` format.
 3. Use `Upload GitHub Now` for automatic upload.
 4. For manual upload, use `Open Upload Folder`, open the GitHub repository's
-   `licenses` folder, and upload only `subscription_manifest.json`.
+   `licenses` folder, and upload only `Fasal_Rin_subscription_manifest.json`.
 
 The registry makes a dated daily backup in `registry_backups/daily` and also
 keeps a timestamped backup before every change. These backup and registry files
 are ignored by Git and stay owner-only.
 
 The legacy hashed JSON file remains temporarily for older Fasal Rin builds. New
-builds use only `subscription_manifest.json`.
+builds use only `Fasal_Rin_subscription_manifest.json`.

@@ -472,7 +472,7 @@ class FasalRinRegistryManager:
     def _upload_github(self) -> None:
         try:
             self._build_files(show_message=False)
-            manifest = "licenses/subscription_manifest.json"
+            manifest = "licenses/Fasal_Rin_subscription_manifest.json"
             subprocess.run(["git", "add", manifest], cwd=str(ROOT), check=True)
             status = subprocess.run(["git", "status", "--porcelain", "--", manifest], cwd=str(ROOT), check=True, capture_output=True, text=True).stdout.strip()
             if not status:
