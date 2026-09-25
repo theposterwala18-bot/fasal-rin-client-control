@@ -1,3 +1,7 @@
 secrets/
 __pycache__/
 *.pyc
+fasal_rin_registry.csv
+registry_backups/
+exports/
+publish/
